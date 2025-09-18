@@ -5,9 +5,11 @@ import Header from './components/Common/Header';
 import Footer from './components/Common/Footer';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ForgotPassword from './components/Auth/ForgotPassword';
+import ResetPassword from './components/Auth/ResetPassword';
 import Profile from './components/Auth/Profile';
 import ArticleList from './components/Articles/ArticleList';
-import ArticleForm from './components/Articles/ArticleForm';
+import ArticleFormEnhanced from './components/Articles/ArticleFormEnhanced';
 import StoryboardCanvas from './components/Storyboard/StoryboardCanvas';
 import './App.css';
 
@@ -23,9 +25,11 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/articles" element={<ProtectedRoute><ArticleList /></ProtectedRoute>} />
-              <Route path="/articles/new" element={<ProtectedRoute><ArticleForm /></ProtectedRoute>} />
+              <Route path="/articles/new" element={<ProtectedRoute><ArticleFormEnhanced /></ProtectedRoute>} />
               <Route path="/storyboard" element={<ProtectedRoute><StoryboardCanvas /></ProtectedRoute>} />
             </Routes>
           </main>
@@ -85,15 +89,15 @@ function HomePage() {
 // Protected route component
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
-    return <div className="text-center">Loading...</div>;
+    return <div className="text-center py-8">Loading...</div>;
   }
-  
+
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 }
 

@@ -25,13 +25,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/storyboards', storyboardRoutes);
 
-// Serve static files from the React app build folder
-app.use(express.static(path.join(__dirname, '../frontend/build')));
-
-// Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
-});
+// In development, let the React dev server handle the frontend
+// In production, serve static files from the React app build folder
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  
+  // Catch-all handler: send back React's index.html file for any non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+  });
+} else {
+  // In development, just serve API routes
+  app.get('/', (req, res) => {
+    res.json({ message: 'Underground Voices API is running! Frontend should be at http://localhost:3000' });
+  });
+}
 
 // Start the server
 app.listen(PORT, () => {

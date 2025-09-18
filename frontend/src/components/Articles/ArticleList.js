@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { articlesAPI } from '../../services/api';
 import ArticleCard from './ArticleCard';
 
@@ -7,16 +7,26 @@ const ArticleList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [author, setAuthor] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [tag, setTag] = useState('');
+  const [tags, setTags] = useState([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  useEffect(() => {
-    loadArticles();
-  }, []);
-
-  const loadArticles = async () => {
+  const loadArticles = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await articlesAPI.getAll();
+      setError('');
+
+      const params = {};
+      if (searchTerm.trim()) params.search = searchTerm.trim();
+      if (author.trim()) params.author = author.trim();
+      if (dateFrom) params.dateFrom = dateFrom;
+      if (dateTo) params.dateTo = dateTo;
+      if (tag) params.tag = tag;
+
+      const response = await articlesAPI.getAll(params);
       setArticles(response.data);
     } catch (err) {
       setError('Failed to load articles');
@@ -24,14 +34,31 @@ const ArticleList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, author, dateFrom, dateTo, tag]);
 
-  const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || article.verified === (filterType === 'verified');
-    return matchesSearch && matchesFilter;
-  });
+  useEffect(() => {
+    loadArticles();
+  }, [loadArticles]);
+
+  useEffect(() => {
+    const loadTags = async () => {
+      try {
+        const response = await articlesAPI.getTags();
+        setTags(response.data || []);
+      } catch (err) {
+        console.error('Error loading tags:', err);
+      }
+    };
+    loadTags();
+  }, []);
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setAuthor('');
+    setDateFrom('');
+    setDateTo('');
+    setTag('');
+  };
 
   if (loading) {
     return (
@@ -49,31 +76,98 @@ const ArticleList = () => {
         </h1>
         
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search articles..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
+        <div className="space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search articles by title or content..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <button
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-white whitespace-nowrap"
+            >
+              {showAdvancedFilters ? 'Hide' : 'Show'} Filters
+            </button>
+            <a
+              href="/articles/new"
+              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 whitespace-nowrap"
+            >
+              New Article
+            </a>
           </div>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="all">All Articles</option>
-            <option value="verified">Verified Only</option>
-            <option value="unverified">Unverified Only</option>
-          </select>
-          <a
-            href="/articles/new"
-            className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 whitespace-nowrap"
-          >
-            New Article
-          </a>
+
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Author
+                </label>
+                <input
+                  type="text"
+                  placeholder="Filter by author..."
+                  value={author}
+                  onChange={(e) => setAuthor(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Date From
+                </label>
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Date To
+                </label>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tag
+                </label>
+                <select
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">All tags</option>
+                  {tags.map((tagOption) => (
+                    <option key={tagOption} value={tagOption}>
+                      {tagOption}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-span-full">
+                <button
+                  onClick={clearFilters}
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-sm"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -83,7 +177,7 @@ const ArticleList = () => {
         </div>
       )}
 
-      {filteredArticles.length === 0 ? (
+      {articles.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 dark:text-gray-500 mb-4">
             <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +188,9 @@ const ArticleList = () => {
             No articles found
           </h3>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            {searchTerm ? 'Try adjusting your search terms' : 'Get started by creating your first article'}
+            {searchTerm || author || dateFrom || dateTo || tag
+              ? 'Try adjusting your search terms or filters'
+              : 'Get started by creating your first article'}
           </p>
           <a
             href="/articles/new"
@@ -105,7 +201,7 @@ const ArticleList = () => {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredArticles.map((article) => (
+          {articles.map((article) => (
             <ArticleCard
               key={article.id}
               article={article}

@@ -4,21 +4,81 @@ const { supabase } = require('../models/database');
 
 const router = express.Router();
 
-// Get all articles
+// Get all articles with search and filtering
 router.get('/', async (req, res) => {
   try {
-    const { data: articles, error } = await supabase
+    const { search, author, dateFrom, dateTo, tag, limit = 50 } = req.query;
+
+    let query = supabase
       .from('articles')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
+      .select('*');
+
+    // Add search functionality
+    if (search) {
+      // Search in title and content using ilike (case-insensitive)
+      query = query.or(`title.ilike.%${search}%, content.ilike.%${search}%`);
+    }
+
+    // Filter by author
+    if (author) {
+      query = query.ilike('author', `%${author}%`);
+    }
+
+    // Filter by date range
+    if (dateFrom) {
+      query = query.gte('created_at', dateFrom);
+    }
+    if (dateTo) {
+      query = query.lte('created_at', dateTo);
+    }
+
+    // Filter by tag (if tags array contains the tag)
+    if (tag) {
+      query = query.contains('tags', [tag]);
+    }
+
+    // Apply limit and order
+    query = query
+      .order('created_at', { ascending: false })
+      .limit(parseInt(limit));
+
+    const { data: articles, error } = await query;
+
     if (error) {
       return res.status(500).json({ error: error.message });
     }
-    
+
     res.json(articles);
   } catch (error) {
     console.error('Error fetching articles:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get unique tags for filtering
+router.get('/tags', async (req, res) => {
+  try {
+    const { data: articles, error } = await supabase
+      .from('articles')
+      .select('tags');
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Extract unique tags from all articles
+    const allTags = articles.reduce((tags, article) => {
+      if (article.tags) {
+        tags.push(...article.tags);
+      }
+      return tags;
+    }, []);
+
+    const uniqueTags = [...new Set(allTags)].sort();
+
+    res.json(uniqueTags);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

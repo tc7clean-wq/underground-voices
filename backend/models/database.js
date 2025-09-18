@@ -1,8 +1,20 @@
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 // Get our Supabase credentials from environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
+
+console.log('Loading environment variables...');
+console.log('SUPABASE_URL:', supabaseUrl ? 'Found' : 'NOT FOUND');
+console.log('SUPABASE_ANON_KEY:', supabaseKey ? 'Found' : 'NOT FOUND');
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('Missing environment variables. Please check your .env file.');
+  console.error('Looking for .env at:', path.join(__dirname, '..', '.env'));
+  process.exit(1);
+}
 
 // Create the Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey);

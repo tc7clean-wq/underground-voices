@@ -36,11 +36,21 @@ export const authAPI = {
   login: (email, password) => api.post('/auth/login', { email, password }),
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
 };
 
 // Articles API
 export const articlesAPI = {
-  getAll: () => api.get('/articles'),
+  getAll: (params = {}) => {
+    const searchParams = new URLSearchParams();
+    Object.keys(params).forEach(key => {
+      if (params[key]) searchParams.append(key, params[key]);
+    });
+    const queryString = searchParams.toString();
+    return api.get(`/articles${queryString ? `?${queryString}` : ''}`);
+  },
+  getTags: () => api.get('/articles/tags'),
   getById: (id) => api.get(`/articles/${id}`),
   create: (article) => api.post('/articles', article),
   update: (id, article) => api.put(`/articles/${id}`, article),

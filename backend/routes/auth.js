@@ -126,6 +126,96 @@ router.get('/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Request password reset
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user exists
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, email, username')
+      .eq('email', email)
+      .single();
+
+    if (error || !user) {
+      // Don't reveal if email exists for security
+      return res.json({ message: 'If this email exists, a reset link has been sent' });
+    }
+
+    // Generate reset token (expires in 1 hour)
+    const resetToken = jwt.sign(
+      { userId: user.id, email: user.email, type: 'password_reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In a real app, you'd send this via email
+    // For now, we'll just return it (for development)
+    console.log(`Password reset link for ${email}: http://localhost:3000/reset-password?token=${resetToken}`);
+
+    res.json({
+      message: 'If this email exists, a reset link has been sent',
+      // Remove this in production - only for development
+      resetLink: `http://localhost:3000/reset-password?token=${resetToken}`
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Reset password with token
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password are required' });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    // Verify reset token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid or expired reset token' });
+    }
+
+    if (decoded.type !== 'password_reset') {
+      return res.status(400).json({ error: 'Invalid token type' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password in database
+    const { error } = await supabase
+      .from('users')
+      .update({ password: hashedPassword })
+      .eq('id', decoded.userId);
+
+    if (error) {
+      return res.status(500).json({ error: 'Failed to update password' });
+    }
+
+    res.json({ message: 'Password reset successful' });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Middleware to verify JWT token
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];

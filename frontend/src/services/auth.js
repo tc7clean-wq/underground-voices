@@ -16,8 +16,8 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     if (token) {
       authAPI.getProfile()
-        .then(userData => {
-          setUser(userData.user);
+        .then(response => {
+          setUser(response.data.user);
         })
         .catch(() => {
           localStorage.removeItem('token');
@@ -33,10 +33,12 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     try {
       const response = await authAPI.login(email, password);
-      localStorage.setItem('token', response.token);
-      setUser(response.user);
-      return response;
+      const { data } = response;
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return data;
     } catch (error) {
+      console.error('Auth service login error:', error);
       throw error;
     }
   };
@@ -44,10 +46,12 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       const response = await authAPI.register(userData);
-      localStorage.setItem('token', response.token);
-      setUser(response.user);
-      return response;
+      const { data } = response;
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      return data;
     } catch (error) {
+      console.error('Auth service register error:', error);
       throw error;
     }
   };

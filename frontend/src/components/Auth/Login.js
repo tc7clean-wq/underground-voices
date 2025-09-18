@@ -27,8 +27,9 @@ const Login = () => {
 
     try {
       await login(formData.email, formData.password);
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
@@ -112,8 +113,8 @@ const Login = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Forgot your password?{' '}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
-                Contact support
+              <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+                Reset it here
               </a>
             </p>
           </div>
