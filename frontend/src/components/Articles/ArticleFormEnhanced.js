@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../services/auth';
 import { articlesAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+// ReactQuill removed for compatibility
 
 const ArticleFormEnhanced = () => {
   const { user } = useAuth();
@@ -232,14 +231,12 @@ const ArticleFormEnhanced = () => {
 
             {richTextEnabled ? (
               <div className="bg-white dark:bg-gray-700 rounded-md">
-                <ReactQuill
-                  theme="snow"
+                <textarea
                   value={formData.content}
-                  onChange={handleContentChange}
-                  modules={modules}
-                  formats={formats}
+                  onChange={(e) => setFormData({...formData, content: e.target.value})}
                   placeholder="Write your article content here. Be thorough and include all relevant details."
-                  className="h-64 mb-12"
+                  className="w-full h-64 p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  required
                 />
               </div>
             ) : (
