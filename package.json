@@ -1,0 +1,36 @@
+{
+  "name": "underground-voices",
+  "version": "1.0.0",
+  "description": "A secure platform for underground journalism and investigation",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "npm run start:backend",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start",
+    "build": "cd frontend && npm run build",
+    "test": "cd frontend && npm test",
+    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "deploy": "npm run build && vercel --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/underground-voices.git"
+  },
+  "keywords": [
+    "journalism",
+    "investigation",
+    "security",
+    "underground",
+    "whistleblowing"
+  ],
+  "author": "Underground Voices Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}

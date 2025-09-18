@@ -8,7 +8,10 @@
       "Bash(npm install:*)",
       "Bash(npm prune:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm update)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

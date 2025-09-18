@@ -1,19 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 
 // Import components
 import Header from './components/Common/Header';
 import Footer from './components/Common/Footer';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import ResetPassword from './components/Auth/ResetPassword';
-import Profile from './components/Auth/Profile';
-import ArticleList from './components/Articles/ArticleList';
-import ArticleForm from './components/Articles/ArticleForm';
-import ArticleFormEnhanced from './components/Articles/ArticleFormEnhanced';
-import StoryboardCanvas from './components/Storyboard/StoryboardCanvas';
+import ToastContainer from './components/Common/ToastContainer';
+import ErrorBoundary from './components/Common/ErrorBoundary';
+import LoadingSpinner from './components/Common/LoadingSpinner';
+// Lazy load components for better performance
+const Home = lazy(() => import('./components/Home/Home'));
+const Login = lazy(() => import('./components/Auth/Login'));
+const Register = lazy(() => import('./components/Auth/Register'));
+const ForgotPassword = lazy(() => import('./components/Auth/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/Auth/ResetPassword'));
+const Profile = lazy(() => import('./components/Auth/Profile'));
+const ArticleList = lazy(() => import('./components/Articles/ArticleList'));
+const ArticleForm = lazy(() => import('./components/Articles/ArticleForm'));
+const ArticleFormEnhanced = lazy(() => import('./components/Articles/ArticleFormEnhanced'));
+const StoryboardCanvas = lazy(() => import('./components/Storyboard/StoryboardCanvas'));
+
+// Import contexts
+import { ToastProvider } from './contexts/ToastContext';
 
 // Import services
 import { authAPI } from './services/api';
@@ -54,42 +62,30 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-      }}>
-        <div style={{ textAlign: 'center', color: 'white' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '3px solid rgba(255,255,255,0.3)',
-            borderTop: '3px solid white',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }}></div>
-          <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>Underground Voices</h1>
-          <p>Loading...</p>
-        </div>
-      </div>
+      <LoadingSpinner
+        fullScreen={true}
+        size="xlarge"
+        color="white"
+        message="Loading Underground Voices..."
+      />
     );
   }
 
   return (
-    <Router>
-      <div className="App" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Header user={user} onLogout={handleLogout} />
+    <ErrorBoundary>
+      <ToastProvider>
+        <Router>
+          <div className="App" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <Header user={user} onLogout={handleLogout} />
 
-        <main style={{ flex: 1, paddingTop: '80px' }}>
-          <Routes>
-            {/* Public routes */}
-            <Route
-              path="/login"
-              element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
-            />
+            <main style={{ flex: 1, paddingTop: '80px' }}>
+            <Suspense fallback={<LoadingSpinner size="large" message="Loading page..." />}>
+              <Routes>
+              {/* Public routes */}
+              <Route
+                path="/login"
+                element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+              />
             <Route
               path="/register"
               element={!user ? <Register onRegister={handleLogin} /> : <Navigate to="/dashboard" />}
@@ -106,7 +102,7 @@ function App() {
             {/* Protected routes */}
             <Route
               path="/dashboard"
-              element={user ? <ArticleList /> : <Navigate to="/login" />}
+              element={user ? <Home user={user} /> : <Navigate to="/login" />}
             />
             <Route
               path="/articles"
@@ -140,10 +136,12 @@ function App() {
               path="/public"
               element={<PublicArticleView />}
             />
-          </Routes>
-        </main>
+              </Routes>
+            </Suspense>
+            </main>
 
         <Footer />
+        <ToastContainer />
 
         {/* Global styles */}
         <style>{`
@@ -165,9 +163,26 @@ function App() {
           .App {
             text-align: left;
           }
+
+          /* Toast animations */
+          @keyframes slide-in-right {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+          }
+
+          @keyframes shrink {
+            0% { width: 100%; }
+            100% { width: 0%; }
+          }
+
+          .animate-slide-in-right {
+            animation: slide-in-right 0.3s ease-out forwards;
+          }
         `}</style>
-      </div>
-    </Router>
+          </div>
+        </Router>
+      </ToastProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -184,10 +199,10 @@ const PublicArticleView = () => {
   const fetchPublicArticles = async () => {
     try {
       // Direct Supabase API call for public articles
-      const response = await fetch('https://yyawiqaqsclsyqjqvwbg.supabase.co/rest/v1/articles?select=*', {
+      const response = await fetch(`${process.env.REACT_APP_SUPABASE_URL}/rest/v1/articles?select=*`, {
         headers: {
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5YXdpcWFxc2Nsc3lxanF2d2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNDU1NjMsImV4cCI6MjA3MzYyMTU2M30.eyoSmpwxmpWzHjO5ND1XK3D-22gT1a2XJE6CeBrMsNE',
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5YXdpcWFxc2Nsc3lxanF2d2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNDU1NjMsImV4cCI6MjA3MzYyMTU2M30.eyoSmpwxmpWzHjO5ND1XK3D-22gT1a2XJE6CeBrMsNE',
+          'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`,
+          'apikey': process.env.REACT_APP_SUPABASE_ANON_KEY,
           'Content-Type': 'application/json'
         }
       });
