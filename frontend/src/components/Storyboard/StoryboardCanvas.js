@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { storyboardsAPI } from '../../services/api';
 import { encryptData, decryptData } from '../../services/encryption';
@@ -8,22 +8,17 @@ const StoryboardCanvas = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newNodeData, setNewNodeData] = useState({ label: '', type: 'source', notes: '' });
-  const [cy, setCy] = useState(null);
   const [saved, setSaved] = useState(true);
 
-  // Load storyboard data
-  useEffect(() => {
-    loadStoryboard();
-  }, []);
-
-  // Auto-save when elements change
-  useEffect(() => {
-    if (elements.length > 0) {
-      const timer = setTimeout(() => {
-        saveStoryboard();
-      }, 2000); // Auto-save after 2 seconds of inactivity
-
-      return () => clearTimeout(timer);
+  const saveStoryboard = useCallback(async () => {
+    try {
+      const encryptedData = encryptData({ elements });
+      await storyboardsAPI.create({ data: encryptedData });
+      setSaved(true);
+      console.log('Storyboard saved!');
+    } catch (error) {
+      console.error('Error saving storyboard:', error);
+      setSaved(false);
     }
   }, [elements]);
 
@@ -40,17 +35,21 @@ const StoryboardCanvas = () => {
     }
   };
 
-  const saveStoryboard = async () => {
-    try {
-      const encryptedData = encryptData({ elements });
-      await storyboardsAPI.create({ data: encryptedData });
-      setSaved(true);
-      console.log('Storyboard saved!');
-    } catch (error) {
-      console.error('Error saving storyboard:', error);
-      setSaved(false);
+  // Load storyboard data
+  useEffect(() => {
+    loadStoryboard();
+  }, []);
+
+  // Auto-save when elements change
+  useEffect(() => {
+    if (elements.length > 0) {
+      const timer = setTimeout(() => {
+        saveStoryboard();
+      }, 2000); // Auto-save after 2 seconds of inactivity
+
+      return () => clearTimeout(timer);
     }
-  };
+  }, [elements, saveStoryboard]);
 
   // Add new node
   const addNode = () => {
@@ -63,7 +62,8 @@ const StoryboardCanvas = () => {
         type: newNodeData.type,
         notes: newNodeData.notes,
         timestamp: new Date().toISOString()
-      }
+      },
+      position: { x: Math.random() * 400 + 200, y: Math.random() * 300 + 150 }
     };
 
     setElements(prev => [...prev, newNode]);
@@ -72,33 +72,45 @@ const StoryboardCanvas = () => {
     setSaved(false);
   };
 
-  // Add connection between nodes
-  const addEdge = (sourceId, targetId) => {
-    const newEdge = {
-      data: {
-        id: `edge_${Date.now()}`,
-        source: sourceId,
-        target: targetId,
-        label: 'connects to'
-      }
-    };
-
-    setElements(prev => [...prev, newEdge]);
-    setSaved(false);
-  };
-
-  // Handle node selection
+  // Handle normal node click for selection
   const handleNodeClick = (event) => {
     const node = event.target;
     setSelectedNode(node.data());
   };
 
-  // Handle canvas click
-  const handleCanvasClick = (event) => {
-    if (event.target === cy) {
-      setSelectedNode(null);
+  // Handle connection between nodes
+  const [connectionMode, setConnectionMode] = useState(false);
+  const [sourceNode, setSourceNode] = useState(null);
+
+  const handleNodeConnection = (event) => {
+    const clickedNode = event.target.data();
+
+    if (!sourceNode) {
+      // First click - select source node
+      setSourceNode(clickedNode);
+    } else if (sourceNode.id !== clickedNode.id) {
+      // Second click - create edge between source and target
+      const edgeId = `edge_${sourceNode.id}_${clickedNode.id}`;
+      const existingEdge = elements.find(el => el.data.id === edgeId);
+
+      if (!existingEdge) {
+        const newEdge = {
+          data: {
+            id: edgeId,
+            source: sourceNode.id,
+            target: clickedNode.id
+          }
+        };
+        setElements(prev => [...prev, newEdge]);
+        setSaved(false);
+      }
+      setConnectionMode(false);
+      setSourceNode(null);
     }
   };
+
+
+
 
   // Delete selected node
   const deleteSelectedNode = () => {
@@ -209,6 +221,19 @@ const StoryboardCanvas = () => {
               Add Node
             </button>
             <button
+              onClick={() => {
+                setConnectionMode(!connectionMode);
+                setSourceNode(null);
+              }}
+              className={`px-4 py-2 rounded-lg ${
+                connectionMode
+                  ? 'bg-orange-500 hover:bg-orange-600'
+                  : 'bg-gray-500 hover:bg-gray-600'
+              } text-white`}
+            >
+              {connectionMode ? 'Cancel Connect' : 'Connect Nodes'}
+            </button>
+            <button
               onClick={saveStoryboard}
               className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
             >
@@ -231,9 +256,11 @@ const StoryboardCanvas = () => {
           style={{ width: '100%', height: '100%' }}
           layout={layout}
           stylesheet={stylesheet}
-          cy={(cy) => setCy(cy)}
           minZoom={0.1}
           maxZoom={3}
+          cy={(cy) => {
+            cy.on('tap', 'node', connectionMode ? handleNodeConnection : handleNodeClick);
+          }}
         />
       </div>
 
