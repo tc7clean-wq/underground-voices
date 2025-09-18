@@ -1,22 +1,37 @@
 const express = require('express');
 const axios = require('axios');
+const { body, query, param, validationResult } = require('express-validator');
 const { supabase } = require('../models/database');
 
 const router = express.Router();
 
 // Get all articles with search and filtering
-router.get('/', async (req, res) => {
+router.get('/', [
+  query('search').optional().trim().escape(),
+  query('author').optional().trim().escape(),
+  query('tag').optional().trim().escape(),
+  query('limit').optional().isInt({ min: 1, max: 100 }).toInt()
+], async (req, res) => {
   try {
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
     const { search, author, dateFrom, dateTo, tag, limit = 50 } = req.query;
 
     let query = supabase
       .from('articles')
       .select('*');
 
-    // Add search functionality
+    // Add search functionality - use parameterized queries
     if (search) {
-      // Search in title and content using ilike (case-insensitive)
-      query = query.or(`title.ilike.%${search}%, content.ilike.%${search}%`);
+      const searchTerm = `%${search}%`;
+      query = query.or(`title.ilike.${searchTerm}, content.ilike.${searchTerm}`);
     }
 
     // Filter by author
@@ -83,8 +98,29 @@ router.get('/tags', async (req, res) => {
   }
 });
 
+// Middleware to verify JWT token for protected routes
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  const jwt = require('jsonwebtoken');
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    req.user = user;
+    next();
+  });
+}
+
 // Get article by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', [
+  param('id').isNumeric()
+], async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -105,15 +141,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new article
-router.post('/', async (req, res) => {
+// Create new article (protected)
+router.post('/', authenticateToken, [
+  body('title').isLength({ min: 1, max: 200 }).trim().escape(),
+  body('content').isLength({ min: 10 }).trim(),
+  body('author').isLength({ min: 1, max: 100 }).trim().escape(),
+  body('tags').optional().isArray(),
+  body('sources').optional().isArray()
+], async (req, res) => {
   try {
-    const { title, content, author, isAnonymous, tags, sources } = req.body;
-    
-    // Validate required fields
-    if (!title || !content || !author) {
-      return res.status(400).json({ error: 'Title, content, and author are required' });
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
     }
+
+    const { title, content, author, isAnonymous, tags, sources } = req.body;
     
     // Create article in database
     const { data: article, error } = await supabase
@@ -143,8 +189,12 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update article
-router.put('/:id', async (req, res) => {
+// Update article (protected)
+router.put('/:id', authenticateToken, [
+  param('id').isNumeric(),
+  body('title').optional().isLength({ min: 1, max: 200 }).trim().escape(),
+  body('content').optional().isLength({ min: 10 }).trim()
+], async (req, res) => {
   try {
     const { id } = req.params;
     const { title, content, tags, sources } = req.body;
@@ -176,8 +226,10 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete article
-router.delete('/:id', async (req, res) => {
+// Delete article (protected)
+router.delete('/:id', authenticateToken, [
+  param('id').isNumeric()
+], async (req, res) => {
   try {
     const { id } = req.params;
     

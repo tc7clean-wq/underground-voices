@@ -1,19 +1,28 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 const { supabase } = require('../models/database');
 
 const router = express.Router();
 
 // Register a new user
-router.post('/register', async (req, res) => {
+router.post('/register', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/),
+  body('username').isLength({ min: 3, max: 30 }).trim().escape()
+], async (req, res) => {
   try {
-    const { email, password, username, isAnonymous } = req.body;
-    
-    // Validate input
-    if (!email || !password || !username) {
-      return res.status(400).json({ error: 'All fields are required' });
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
     }
+
+    const { email, password, username, isAnonymous } = req.body;
     
     // Hash the password for security
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -61,10 +70,22 @@ router.post('/register', async (req, res) => {
 });
 
 // Login user
-router.post('/login', async (req, res) => {
+router.post('/login', [
+  body('email').isEmail().normalizeEmail(),
+  body('password').notEmpty()
+], async (req, res) => {
   try {
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
     const { email, password } = req.body;
-    
+
     // Find user in database
     const { data: user, error } = await supabase
       .from('users')
@@ -155,13 +176,11 @@ router.post('/forgot-password', async (req, res) => {
     );
 
     // In a real app, you'd send this via email
-    // For now, we'll just return it (for development)
-    console.log(`Password reset link for ${email}: http://localhost:3000/reset-password?token=${resetToken}`);
+    // For development, log without exposing sensitive data
+    console.log(`Password reset requested for: ${email.substring(0, 3)}***`);
 
     res.json({
-      message: 'If this email exists, a reset link has been sent',
-      // Remove this in production - only for development
-      resetLink: `http://localhost:3000/reset-password?token=${resetToken}`
+      message: 'If this email exists, a reset link has been sent'
     });
 
   } catch (error) {

@@ -5,7 +5,30 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 require('dotenv').config();
+
+// Validate environment variables
+function validateEnvironment() {
+  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'JWT_SECRET'];
+  const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+  if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing.join(', '));
+    process.exit(1);
+  }
+
+  if (process.env.JWT_SECRET.length < 32) {
+    console.error('❌ JWT_SECRET must be at least 32 characters long');
+    process.exit(1);
+  }
+
+  console.log('✅ Environment validation passed');
+}
+
+// Validate environment on startup
+validateEnvironment();
 
 // Import our custom route files
 const authRoutes = require('./routes/auth');
@@ -16,9 +39,34 @@ const storyboardRoutes = require('./routes/storyboards');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Security middleware
+app.use(helmet()); // Adds security headers
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://yourdomain.com']
+    : ['http://localhost:3000'],
+  credentials: true
+})); // Restricted CORS
+
+// Rate limiting
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 auth requests per windowMs
+  message: 'Too many authentication attempts, please try again later.',
+  skipSuccessfulRequests: true
+});
+
+app.use(generalLimiter);
+app.use('/api/auth', authLimiter);
+
 // Middleware - these are like filters that process requests
-app.use(cors()); // Allows frontend to talk to backend
-app.use(express.json()); // Converts JSON data to JavaScript objects
+app.use(express.json({ limit: '10mb' })); // Converts JSON data to JavaScript objects with size limit
 
 // Routes - these tell the server what to do when someone visits different URLs
 app.use('/api/auth', authRoutes);
