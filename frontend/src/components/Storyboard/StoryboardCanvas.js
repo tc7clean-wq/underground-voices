@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import { storyboardsAPI } from '../../services/api';
 import { encryptData, decryptData } from '../../services/encryption';

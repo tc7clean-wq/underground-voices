@@ -1,104 +1,141 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './services/auth';
-import Header from './components/Common/Header';
-import Footer from './components/Common/Footer';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
-import ForgotPassword from './components/Auth/ForgotPassword';
-import ResetPassword from './components/Auth/ResetPassword';
-import Profile from './components/Auth/Profile';
-import ArticleList from './components/Articles/ArticleList';
-import ArticleFormEnhanced from './components/Articles/ArticleFormEnhanced';
-import StoryboardCanvas from './components/Storyboard/StoryboardCanvas';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Main App component
 function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-          <Header />
-          <main className="container mx-auto px-4 py-8">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/articles" element={<ProtectedRoute><ArticleList /></ProtectedRoute>} />
-              <Route path="/articles/new" element={<ProtectedRoute><ArticleFormEnhanced /></ProtectedRoute>} />
-              <Route path="/storyboard" element={<ProtectedRoute><StoryboardCanvas /></ProtectedRoute>} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </AuthProvider>
-  );
-}
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-// Home page component
-function HomePage() {
-  const { user } = useAuth();
-  
-  return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
-        Underground Voices
-      </h1>
-      <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-        A secure platform for underground journalists to connect the dots
-      </p>
-      
-      {user ? (
-        <div className="space-y-4">
-          <p className="text-lg text-gray-700 dark:text-gray-200">
-            Welcome back, {user.username}!
-          </p>
-          <div className="flex justify-center space-x-4">
-            <a href="/articles" className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-              View Articles
-            </a>
-            <a href="/storyboard" className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600">
-              Connect the Dots
-            </a>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <p className="text-lg text-gray-700 dark:text-gray-200">
-            Join the underground journalism movement
-          </p>
-          <div className="flex justify-center space-x-4">
-            <a href="/register" className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-              Get Started
-            </a>
-            <a href="/login" className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">
-              Sign In
-            </a>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
-// Protected route component
-function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth();
+  const fetchArticles = async () => {
+    try {
+      const response = await fetch('https://yyawiqaqsclsyqjqvwbg.supabase.co/rest/v1/articles', {
+        headers: {
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5YXdpcWFxc2Nsc3lxanF2d2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNDU1NjMsImV4cCI6MjA3MzYyMTU2M30.eyoSmpwxmpWzHjO5ND1XK3D-22gT1a2XJE6CeBrMsNE',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5YXdpcWFxc2Nsc3lxanF2d2JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwNDU1NjMsImV4cCI6MjA3MzYyMTU2M30.eyoSmpwxmpWzHjO5ND1XK3D-22gT1a2XJE6CeBrMsNE',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setArticles(data);
+      } else {
+        setError('Failed to fetch articles');
+      }
+    } catch (err) {
+      setError('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
-    return <div className="text-center py-8">Loading...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h1>Underground Voices</h1>
+        <p>Loading articles...</p>
+      </div>
+    );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
+  if (error) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: 'red' }}>
+        <h1>Underground Voices</h1>
+        <p>Error: {error}</p>
+        <button onClick={fetchArticles}>Retry</button>
+      </div>
+    );
   }
 
-  return children;
+  return (
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>Underground Voices</h1>
+      <p style={{ textAlign: 'center', marginBottom: '30px' }}>
+        A secure platform for underground journalists
+      </p>
+
+      <div style={{ marginBottom: '20px' }}>
+        <h2>Articles ({articles.length})</h2>
+      </div>
+
+      {articles.map(article => (
+        <div
+          key={article.id}
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            padding: '15px',
+            marginBottom: '15px',
+            backgroundColor: '#f9f9f9'
+          }}
+        >
+          <h3 style={{ margin: '0 0 10px 0', color: '#2563eb' }}>
+            {article.title}
+          </h3>
+          <p style={{ color: '#666', fontSize: '14px', margin: '0 0 10px 0' }}>
+            By {article.is_anonymous ? 'Anonymous' : article.author} •
+            {new Date(article.created_at).toLocaleDateString()}
+            {article.verified && <span style={{ color: 'green', marginLeft: '10px' }}>✓ Verified</span>}
+          </p>
+          <p style={{ lineHeight: '1.5', margin: '0 0 10px 0' }}>
+            {article.content}
+          </p>
+          {article.tags && article.tags.length > 0 && (
+            <div style={{ marginTop: '10px' }}>
+              {article.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  style={{
+                    backgroundColor: '#e3f2fd',
+                    color: '#1976d2',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    marginRight: '5px'
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {article.sources && article.sources.length > 0 && (
+            <div style={{ marginTop: '10px', fontSize: '14px' }}>
+              <strong>Sources:</strong>
+              {article.sources.map((source, index) => (
+                <a
+                  key={index}
+                  href={source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ marginLeft: '10px', color: '#1976d2' }}
+                >
+                  Link {index + 1}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {articles.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <p>No articles found. The database connection is working but there are no articles to display.</p>
+        </div>
+      )}
+
+      <div style={{ textAlign: 'center', marginTop: '40px', padding: '20px', borderTop: '1px solid #ddd' }}>
+        <p style={{ color: '#666', fontSize: '14px' }}>
+          Underground Voices • Connecting journalists worldwide
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default App;

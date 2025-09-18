@@ -12,9 +12,10 @@ const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = process.env.REACT_APP_SUPABASE_ANON_KEY;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    config.headers.apikey = token;
   }
   return config;
 });
@@ -51,10 +52,10 @@ export const articlesAPI = {
     return api.get(`/articles${queryString ? `?${queryString}` : ''}`);
   },
   getTags: () => api.get('/articles/tags'),
-  getById: (id) => api.get(`/articles/${id}`),
+  getById: (id) => api.get(`/articles?id=eq.${id}`),
   create: (article) => api.post('/articles', article),
-  update: (id, article) => api.put(`/articles/${id}`, article),
-  delete: (id) => api.delete(`/articles/${id}`),
+  update: (id, article) => api.patch(`/articles?id=eq.${id}`, article),
+  delete: (id) => api.delete(`/articles?id=eq.${id}`),
   verify: (url) => api.post('/articles/verify', { url }),
 };
 

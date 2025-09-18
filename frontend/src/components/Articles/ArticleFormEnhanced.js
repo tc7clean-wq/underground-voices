@@ -84,12 +84,6 @@ const ArticleFormEnhanced = () => {
     }));
   };
 
-  const handleContentChange = (value) => {
-    setFormData(prev => ({
-      ...prev,
-      content: value
-    }));
-  };
 
   const clearDraft = () => {
     localStorage.removeItem('articleDraft');
@@ -142,28 +136,6 @@ const ArticleFormEnhanced = () => {
     }
   };
 
-  // Quill editor configuration
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      ['blockquote', 'code-block'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'indent': '-1'}, { 'indent': '+1' }],
-      ['link', 'image', 'video'],
-      [{ 'color': [] }, { 'background': [] }],
-      ['clean']
-    ],
-  };
-
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'blockquote', 'code-block',
-    'list', 'bullet', 'indent',
-    'link', 'image', 'video',
-    'color', 'background'
-  ];
 
   return (
     <div className="max-w-4xl mx-auto">
