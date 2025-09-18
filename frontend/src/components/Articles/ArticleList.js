@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { articlesAPI } from '../../services/api';
 import ArticleCard from './ArticleCard';
 
@@ -93,12 +94,12 @@ const ArticleList = () => {
             >
               {showAdvancedFilters ? 'Hide' : 'Show'} Filters
             </button>
-            <a
-              href="/articles/new"
+            <Link
+              to="/articles/new"
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 whitespace-nowrap"
             >
               New Article
-            </a>
+            </Link>
           </div>
 
           {showAdvancedFilters && (
@@ -192,12 +193,12 @@ const ArticleList = () => {
               ? 'Try adjusting your search terms or filters'
               : 'Get started by creating your first article'}
           </p>
-          <a
-            href="/articles/new"
+          <Link
+            to="/articles/new"
             className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
           >
             Create Article
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

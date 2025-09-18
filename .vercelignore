@@ -1,0 +1,7 @@
+backend/
+*.md
+*.sql
+*.bat
+*.sh
+.git/
+.claude/

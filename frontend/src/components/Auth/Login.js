@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../services/auth';
-import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { login } = useAuth();
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -26,11 +25,20 @@ const Login = () => {
     setError('');
 
     try {
-      await login(formData.email, formData.password);
-      navigate('/', { replace: true });
+      const response = await authAPI.login(formData.email, formData.password);
+      const { token, user } = response.data;
+
+      // Store token
+      localStorage.setItem('token', token);
+
+      // Call parent's onLogin handler
+      onLogin(user);
+
+      // Navigate to dashboard
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.error || 'Login failed');
+      setError(err.response?.data?.error || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -45,9 +53,9 @@ const Login = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
-            <a href="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
               create a new account
-            </a>
+            </Link>
           </p>
         </div>
         
@@ -113,9 +121,9 @@ const Login = () => {
           <div className="text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Forgot your password?{' '}
-              <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+              <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
                 Reset it here
-              </a>
+              </Link>
             </p>
           </div>
         </form>

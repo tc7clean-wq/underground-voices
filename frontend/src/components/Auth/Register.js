@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../services/auth';
-import { useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Register = () => {
+const Register = ({ onRegister }) => {
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -12,8 +12,7 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const { register } = useAuth();
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -44,18 +43,26 @@ const Register = () => {
     }
 
     try {
-      await register({
+      const response = await authAPI.register({
         username: formData.username,
         email: formData.email,
         password: formData.password,
         isAnonymous: formData.isAnonymous
       });
-      
+
+      const { token, user } = response.data;
+
+      // Store token
+      localStorage.setItem('token', token);
+
+      // Call parent's onRegister handler
+      onRegister(user);
+
       // Navigate to dashboard after successful registration
-      navigate('/', { replace: true });
+      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.error || 'Registration failed. Please check your information.');
     } finally {
       setLoading(false);
     }
@@ -70,9 +77,9 @@ const Register = () => {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             Or{' '}
-            <a href="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
+            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400">
               sign in to your existing account
-            </a>
+            </Link>
           </p>
         </div>
         

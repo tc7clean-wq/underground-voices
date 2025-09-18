@@ -43,7 +43,7 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet()); // Adds security headers
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? ['https://yourdomain.com']
+    ? ['https://frontend-rho-khaki-88.vercel.app', 'https://underground-voices-delta.vercel.app', 'https://underground-voices.vercel.app']
     : ['http://localhost:3000'],
   credentials: true
 })); // Restricted CORS
