@@ -10,12 +10,18 @@ const api = axios.create({
   },
 });
 
-// Add token to requests
+// Add token to requests (except for auth endpoints)
 api.interceptors.request.use((config) => {
-  const token = process.env.REACT_APP_SUPABASE_ANON_KEY;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    config.headers.apikey = token;
+  const isAuthEndpoint = config.url?.includes('/auth/login') ||
+                         config.url?.includes('/auth/register') ||
+                         config.url?.includes('/auth/forgot-password') ||
+                         config.url?.includes('/auth/reset-password');
+
+  if (!isAuthEndpoint) {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
   return config;
 });
@@ -52,10 +58,10 @@ export const articlesAPI = {
     return api.get(`/articles${queryString ? `?${queryString}` : ''}`);
   },
   getTags: () => api.get('/articles/tags'),
-  getById: (id) => api.get(`/articles?id=eq.${id}`),
+  getById: (id) => api.get(`/articles/${id}`),
   create: (article) => api.post('/articles', article),
-  update: (id, article) => api.patch(`/articles?id=eq.${id}`, article),
-  delete: (id) => api.delete(`/articles?id=eq.${id}`),
+  update: (id, article) => api.put(`/articles/${id}`, article),
+  delete: (id) => api.delete(`/articles/${id}`),
   verify: (url) => api.post('/articles/verify', { url }),
 };
 

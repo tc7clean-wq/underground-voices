@@ -9,7 +9,7 @@ const router = express.Router();
 // Register a new user
 router.post('/register', [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/),
+  body('password').isLength({ min: 8 }),
   body('username').isLength({ min: 3, max: 30 }).trim().escape()
 ], async (req, res) => {
   try {
@@ -42,6 +42,11 @@ router.post('/register', [
       .select();
     
     if (error) {
+      if (error.code === '23505' && error.constraint === 'users_email_key') {
+        return res.status(400).json({ error: 'This email is already registered. Please use a different email or try logging in.' });
+      } else if (error.code === '23505' && error.constraint === 'users_username_key') {
+        return res.status(400).json({ error: 'This username is already taken. Please choose a different username.' });
+      }
       return res.status(400).json({ error: error.message });
     }
     

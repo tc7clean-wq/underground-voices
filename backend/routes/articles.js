@@ -119,7 +119,7 @@ function authenticateToken(req, res, next) {
 
 // Get article by ID
 router.get('/:id', [
-  param('id').isNumeric()
+  param('id').isUUID().withMessage('Invalid article ID format')
 ], async (req, res) => {
   try {
     const { id } = req.params;
@@ -191,11 +191,20 @@ router.post('/', authenticateToken, [
 
 // Update article (protected)
 router.put('/:id', authenticateToken, [
-  param('id').isNumeric(),
+  param('id').isUUID().withMessage('Invalid article ID format'),
   body('title').optional().isLength({ min: 1, max: 200 }).trim().escape(),
   body('content').optional().isLength({ min: 10 }).trim()
 ], async (req, res) => {
   try {
+    // Check validation results
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: errors.array()
+      });
+    }
+
     const { id } = req.params;
     const { title, content, tags, sources } = req.body;
     
@@ -228,7 +237,7 @@ router.put('/:id', authenticateToken, [
 
 // Delete article (protected)
 router.delete('/:id', authenticateToken, [
-  param('id').isNumeric()
+  param('id').isUUID().withMessage('Invalid article ID format')
 ], async (req, res) => {
   try {
     const { id } = req.params;
