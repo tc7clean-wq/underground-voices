@@ -21,7 +21,12 @@
       "Bash(npm start)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(powershell \"Remove-Item -Recurse -Force node_modules, package-lock.json -ErrorAction SilentlyContinue\")",
+      "Bash(npm cache clean:*)",
+      "Bash(BROWSER=none npm start)",
+      "Bash(taskkill:*)",
+      "WebFetch(domain:underground-voices.vercel.app)"
     ],
     "deny": [],
     "ask": []
