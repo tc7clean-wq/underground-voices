@@ -11,7 +11,7 @@ require('dotenv').config();
 
 // Validate environment variables
 function validateEnvironment() {
-  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'JWT_SECRET'];
+  const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_ANON_KEY', 'JWT_SECRET', 'NEWS_API_KEY'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
   if (missing.length > 0) {

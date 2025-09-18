@@ -1,5 +1,6 @@
 const express = require('express');
 const { supabase } = require('../models/database');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -44,8 +45,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create new storyboard
-router.post('/', async (req, res) => {
+// Create new storyboard (protected)
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { title, data, author, isPublic } = req.body;
     
@@ -80,8 +81,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update storyboard
-router.put('/:id', async (req, res) => {
+// Update storyboard (protected)
+router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, data, isPublic } = req.body;
@@ -112,8 +113,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Delete storyboard
-router.delete('/:id', async (req, res) => {
+// Delete storyboard (protected)
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -133,8 +134,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Share storyboard (create public link)
-router.post('/:id/share', async (req, res) => {
+// Share storyboard (create public link) (protected)
+router.post('/:id/share', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     
