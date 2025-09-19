@@ -1,0 +1,290 @@
+/* Midnight Whistleblower Theme */
+:root {
+  /* Primary Color Palette */
+  --midnight-primary: #1e3a8a;
+  --midnight-secondary: #64748b;
+  --midnight-accent: #3b82f6;
+  --midnight-background: #334155;
+  --midnight-surface: #475569;
+  --midnight-text: #f1f5f9;
+  --midnight-text-secondary: #cbd5e1;
+  --midnight-highlight: #ffffff;
+  --midnight-border: #4b5563;
+
+  /* Depth & Shadow Colors */
+  --midnight-shadow-light: rgba(30, 58, 138, 0.1);
+  --midnight-shadow-medium: rgba(30, 58, 138, 0.2);
+  --midnight-shadow-heavy: rgba(30, 58, 138, 0.3);
+
+  /* Gradients */
+  --midnight-gradient-primary: linear-gradient(135deg, #1e3a8a 0%, #334155 100%);
+  --midnight-gradient-secondary: linear-gradient(135deg, #475569 0%, #64748b 100%);
+  --midnight-gradient-accent: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+
+  /* State Colors */
+  --midnight-success: #10b981;
+  --midnight-warning: #f59e0b;
+  --midnight-error: #ef4444;
+  --midnight-info: #06b6d4;
+}
+
+/* Global Midnight Theme Styles */
+.midnight-theme {
+  background: var(--midnight-background);
+  color: var(--midnight-text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Base Elements */
+.midnight-theme body {
+  background: var(--midnight-gradient-primary);
+  min-height: 100vh;
+}
+
+.midnight-theme .bg-primary {
+  background: var(--midnight-primary);
+}
+
+.midnight-theme .bg-secondary {
+  background: var(--midnight-secondary);
+}
+
+.midnight-theme .bg-surface {
+  background: var(--midnight-surface);
+  border: 1px solid var(--midnight-border);
+  box-shadow: 0 4px 6px var(--midnight-shadow-light);
+}
+
+.midnight-theme .bg-accent {
+  background: var(--midnight-gradient-accent);
+}
+
+/* Cards and Containers */
+.midnight-theme .card {
+  background: var(--midnight-surface);
+  border: 1px solid var(--midnight-border);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px var(--midnight-shadow-light),
+    0 1px 3px var(--midnight-shadow-medium);
+  backdrop-filter: blur(10px);
+}
+
+.midnight-theme .card:hover {
+  box-shadow:
+    0 8px 25px var(--midnight-shadow-medium),
+    0 4px 12px var(--midnight-shadow-light);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Buttons */
+.midnight-theme .btn-primary {
+  background: var(--midnight-gradient-accent);
+  color: var(--midnight-highlight);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px var(--midnight-shadow-medium);
+  transition: all 0.2s ease;
+}
+
+.midnight-theme .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--midnight-shadow-heavy);
+}
+
+.midnight-theme .btn-secondary {
+  background: var(--midnight-secondary);
+  color: var(--midnight-text);
+  border: 1px solid var(--midnight-border);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.midnight-theme .btn-secondary:hover {
+  background: var(--midnight-surface);
+  border-color: var(--midnight-accent);
+}
+
+/* Form Elements */
+.midnight-theme input,
+.midnight-theme textarea,
+.midnight-theme select {
+  background: var(--midnight-surface);
+  border: 1px solid var(--midnight-border);
+  color: var(--midnight-text);
+  border-radius: 8px;
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.midnight-theme input:focus,
+.midnight-theme textarea:focus,
+.midnight-theme select:focus {
+  border-color: var(--midnight-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.midnight-theme input::placeholder,
+.midnight-theme textarea::placeholder {
+  color: var(--midnight-text-secondary);
+}
+
+/* Headers and Navigation */
+.midnight-theme .header {
+  background: rgba(51, 65, 85, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--midnight-border);
+  box-shadow: 0 2px 10px var(--midnight-shadow-medium);
+}
+
+.midnight-theme .nav-link {
+  color: var(--midnight-text);
+  transition: color 0.2s ease;
+}
+
+.midnight-theme .nav-link:hover {
+  color: var(--midnight-accent);
+}
+
+/* Text Elements */
+.midnight-theme h1,
+.midnight-theme h2,
+.midnight-theme h3,
+.midnight-theme h4,
+.midnight-theme h5,
+.midnight-theme h6 {
+  color: var(--midnight-highlight);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.midnight-theme p {
+  color: var(--midnight-text);
+  line-height: 1.6;
+}
+
+.midnight-theme .text-secondary {
+  color: var(--midnight-text-secondary);
+}
+
+.midnight-theme .text-accent {
+  color: var(--midnight-accent);
+}
+
+/* Links */
+.midnight-theme a {
+  color: var(--midnight-accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.midnight-theme a:hover {
+  color: var(--midnight-highlight);
+}
+
+/* Borders and Dividers */
+.midnight-theme .border {
+  border-color: var(--midnight-border);
+}
+
+.midnight-theme .divider {
+  height: 1px;
+  background: var(--midnight-border);
+  margin: 1rem 0;
+}
+
+/* Shadows and Depth */
+.midnight-theme .shadow-sm {
+  box-shadow: 0 1px 2px var(--midnight-shadow-light);
+}
+
+.midnight-theme .shadow {
+  box-shadow: 0 4px 6px var(--midnight-shadow-light);
+}
+
+.midnight-theme .shadow-lg {
+  box-shadow: 0 10px 15px var(--midnight-shadow-medium);
+}
+
+.midnight-theme .shadow-xl {
+  box-shadow: 0 20px 25px var(--midnight-shadow-heavy);
+}
+
+/* Special Effects */
+.midnight-theme .glass-effect {
+  background: rgba(51, 65, 85, 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.midnight-theme .subtle-glow {
+  box-shadow:
+    0 0 20px rgba(59, 130, 246, 0.1),
+    0 4px 6px var(--midnight-shadow-light);
+}
+
+/* Status Colors */
+.midnight-theme .text-success {
+  color: var(--midnight-success);
+}
+
+.midnight-theme .text-warning {
+  color: var(--midnight-warning);
+}
+
+.midnight-theme .text-error {
+  color: var(--midnight-error);
+}
+
+.midnight-theme .text-info {
+  color: var(--midnight-info);
+}
+
+/* Animations */
+.midnight-theme .fade-in {
+  animation: midnightFadeIn 0.6s ease-out;
+}
+
+.midnight-theme .slide-up {
+  animation: midnightSlideUp 0.4s ease-out;
+}
+
+@keyframes midnightFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes midnightSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .midnight-theme .card {
+    border-radius: 8px;
+    margin: 0.5rem;
+  }
+
+  .midnight-theme .shadow-lg {
+    box-shadow: 0 4px 6px var(--midnight-shadow-medium);
+  }
+}

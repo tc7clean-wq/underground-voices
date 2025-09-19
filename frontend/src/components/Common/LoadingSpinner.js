@@ -28,7 +28,7 @@ const LoadingSpinner = ({
     <div className="flex flex-col items-center justify-center space-y-3">
       <div className={spinnerClass}></div>
       {message && (
-        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+        <p className="text-sm text-secondary font-medium">
           {message}
         </p>
       )}
@@ -37,7 +37,7 @@ const LoadingSpinner = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
+      <div className="midnight-theme fixed inset-0 flex items-center justify-center z-50" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #334155 100%)' }}>
         {content}
       </div>
     );

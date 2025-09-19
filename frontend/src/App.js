@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import './styles/midnight-theme.css';
 
 // Import components
 import Header from './components/Common/Header';
@@ -22,6 +23,7 @@ const StoryboardCanvas = lazy(() => import('./components/Storyboard/StoryboardCa
 
 // Import contexts
 import { ToastProvider } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 // Import services
 import { authAPI } from './services/api';
@@ -73,9 +75,10 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ToastProvider>
-        <Router>
-          <div className="App" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <ThemeProvider>
+        <ToastProvider>
+          <Router>
+          <div className="App midnight-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Header user={user} onLogout={handleLogout} />
 
             <main style={{ flex: 1, paddingTop: '80px' }}>
@@ -152,12 +155,14 @@ function App() {
 
           body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
               'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
               sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #1e3a8a 0%, #334155 100%);
+            color: #f1f5f9;
+            min-height: 100vh;
           }
 
           .App {
@@ -179,9 +184,10 @@ function App() {
             animation: slide-in-right 0.3s ease-out forwards;
           }
         `}</style>
-          </div>
-        </Router>
-      </ToastProvider>
+            </div>
+          </Router>
+        </ToastProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

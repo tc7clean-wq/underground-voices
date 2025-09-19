@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import ThemeToggle from './ThemeToggle';
 
 const Header = ({ user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,14 +13,14 @@ const Header = ({ user, onLogout }) => {
   };
 
   return (
-    <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-40">
+    <header className="midnight-theme header bg-surface shadow-sm border-b border fixed top-0 left-0 right-0 z-40">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link
               to={user ? "/dashboard" : "/login"}
-              className="text-xl font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="text-xl font-bold text-highlight hover:text-accent transition-colors"
             >
               Underground Voices
             </Link>
@@ -31,25 +32,25 @@ const Header = ({ user, onLogout }) => {
               <>
                 <Link
                   to="/dashboard"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="nav-link font-medium"
                 >
                   Dashboard
                 </Link>
                 <Link
                   to="/articles"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="nav-link font-medium"
                 >
                   Articles
                 </Link>
                 <Link
                   to="/articles/new"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="nav-link font-medium"
                 >
                   Write Article
                 </Link>
                 <Link
                   to="/storyboard"
-                  className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                  className="nav-link font-medium"
                 >
                   Connect the Dots
                 </Link>
@@ -127,19 +128,8 @@ const Header = ({ user, onLogout }) => {
               </div>
             )}
 
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => {
-                document.documentElement.classList.toggle('dark');
-                localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
-              }}
-              className="p-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-              title="Toggle dark mode"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-              </svg>
-            </button>
+            {/* Theme Toggle */}
+            <ThemeToggle size="medium" />
 
             {/* Mobile Menu Button */}
             <button

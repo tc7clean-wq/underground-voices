@@ -152,20 +152,20 @@ const Home = ({ user }) => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 midnight-theme">
       {/* Welcome Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <h1 className="text-3xl font-bold text-white mb-2">
           Welcome back, {user?.username || 'Anonymous'}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-secondary">
           Your secure platform for underground journalism and investigation
         </p>
       </div>
 
       {/* Quick Actions Grid */}
       <div className="quick-actions mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -173,7 +173,7 @@ const Home = ({ user }) => {
             <Link
               key={index}
               to={action.path}
-              className={`${action.color} ${index === 0 ? 'submit-tip' : ''} text-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
+              className={`${action.color} ${index === 0 ? 'submit-tip' : ''} card text-white p-6 rounded-lg subtle-glow hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
             >
               <div className="text-3xl mb-3">{action.icon}</div>
               <h3 className="font-semibold text-lg mb-2">{action.title}</h3>
@@ -192,27 +192,27 @@ const Home = ({ user }) => {
 
       {/* Dashboard Stats */}
       <div className="dashboard-stats mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+        <h2 className="text-xl font-semibold text-white mb-4">
           Community Overview
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+          <div className="card bg-surface p-6 rounded-lg shadow">
+            <div className="text-2xl font-bold text-accent mb-2">
               {stats.totalArticles}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total Tips Submitted</div>
+            <div className="text-sm text-secondary">Total Tips Submitted</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+          <div className="card bg-surface p-6 rounded-lg shadow">
+            <div className="text-2xl font-bold text-success mb-2">
               {stats.recentArticles}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">New This Week</div>
+            <div className="text-sm text-secondary">New This Week</div>
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+          <div className="card bg-surface p-6 rounded-lg shadow">
+            <div className="text-2xl font-bold text-info mb-2">
               {stats.userArticles}
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Your Contributions</div>
+            <div className="text-sm text-secondary">Your Contributions</div>
           </div>
         </div>
       </div>
